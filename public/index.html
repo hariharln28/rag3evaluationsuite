@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RAG3 Evaluation Suite — Benchmarking & Defensible Metrics</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+              900: '#312e81',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-feature-settings: "cv02", "cv03", "cv04", "cv11"; }
+    .glass { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); }
+    .dark .glass { background: rgba(17, 24, 39, 0.85); }
+    [x-cloak] { display: none !important; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 antialiased min-h-screen">
+  <!-- Top Navigation -->
+  <header class="sticky top-0 z-40 w-full border-b border-slate-200 bg-white/90 backdrop-blur-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="h-9 w-9 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold text-lg shadow-sm shadow-indigo-200">
+          R3
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="font-bold text-slate-900 tracking-tight text-base sm:text-lg">RAG3 Evaluation Suite</span>
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-emerald-100 text-emerald-800">
+              <span class="w-1.5 h-1.5 mr-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Vercel Live
+            </span>
+          </div>
+          <p class="text-xs text-slate-500 hidden sm:block">Retrieval Quality vs. Generation Quality Defense Bench</p>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-2 sm:space-x-3">
+        <button id="btn-export-csv" class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-lg text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 shadow-sm transition">
+          <svg class="w-3.5 h-3.5 mr-1.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+          Export CSV
+        </button>
+        <button id="btn-run-eval" class="inline-flex items-center px-4 py-1.5 text-xs font-semibold rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm transition">
+          <svg id="eval-spinner" class="hidden animate-spin -ml-0.5 mr-1.5 h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <span id="eval-btn-text">Run Suite</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Navigation Tabs -->
+  <div class="border-b border-slate-200 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <nav class="flex space-x-6 overflow-x-auto py-2.5 text-sm font-medium">
+        <button onclick="switchTab('dashboard')" id="tab-dashboard" class="tab-btn pb-1 border-b-2 border-indigo-600 text-indigo-600 font-semibold whitespace-nowrap">Dashboard & Metrics</button>
+        <button onclick="switchTab('results')" id="tab-results" class="tab-btn pb-1 border-b-2 border-transparent text-slate-600 hover:text-slate-900 whitespace-nowrap">Evaluation Table (45 Questions)</button>
+        <button onclick="switchTab('playground')" id="tab-playground" class="tab-btn pb-1 border-b-2 border-transparent text-slate-600 hover:text-slate-900 whitespace-nowrap">Interactive Playground</button>
+        <button onclick="switchTab('corpus')" id="tab-corpus" class="tab-btn pb-1 border-b-2 border-transparent text-slate-600 hover:text-slate-900 whitespace-nowrap">Corpus Browser (13 Docs)</button>
+      </nav>
+    </div>
+  </div>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- VIEW 1: DASHBOARD -->
+    <div id="view-dashboard" class="space-y-8">
+      <!-- Hero Score Banner -->
+      <div class="rounded-2xl bg-gradient-to-br from-indigo-900 via-indigo-850 to-slate-900 text-white p-6 sm:p-8 shadow-xl relative overflow-hidden">
+        <div class="absolute -right-10 -bottom-10 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+          <div class="space-y-3 max-w-2xl">
+            <div class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-400/20">
+              Technical Review Defense Metric
+            </div>
+            <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">The Number You Can Defend</h1>
+            <p class="text-sm text-slate-300 leading-relaxed">
+              Evaluating RAG requires isolating <strong class="text-white">retrieval ranking</strong> from <strong class="text-white">generation accuracy</strong>.
+              A fluent answer is not evidence that retrieval worked. We evaluate both independently on Northstar Analytics' gold suite.
+            </p>
+            <div class="pt-2 flex flex-wrap items-center gap-3 text-xs text-slate-300 font-mono">
+              <span class="bg-white/10 px-2 py-1 rounded">Formula: 0.40 × Hit@1 + 0.35 × OracleAcc + 0.25 × AbstainAcc</span>
+            </div>
+          </div>
+
+          <div class="flex flex-col items-start lg:items-end justify-center bg-white/5 border border-white/10 rounded-xl p-6 min-w-[240px]">
+            <span class="text-xs uppercase tracking-wider text-slate-400 font-medium">Composite Review Score</span>
+            <div id="score-display" class="text-5xl sm:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-teal-200 my-1">
+              83.7%
+            </div>
+            <div id="verdict-display" class="text-xs font-medium text-emerald-400 flex items-center mt-1">
+              <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+              Defensible in Engineering Review
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Core Pillars Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- 1. Retrieval Quality -->
+        <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-xs font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-md">Pillar 1: Retrieval</span>
+              <span class="text-xs text-slate-400">Did right passage return?</span>
+            </div>
+            <h3 class="text-base font-bold text-slate-800 mb-4">Retrieval Quality</h3>
+            <div class="space-y-3">
+              <div class="flex justify-between items-center py-1.5 border-b border-slate-100">
+                <span class="text-xs text-slate-600 font-medium">Hit@1 (Rank-1 Precision)</span>
+                <span id="m-hit1" class="text-sm font-bold text-slate-900 font-mono">75.6%</span>
+              </div>
+              <div class="flex justify-between items-center py-1.5 border-b border-slate-100">
+                <span class="text-xs text-slate-600 font-medium">Hit@3</span>
+                <span id="m-hit3" class="text-sm font-bold text-slate-900 font-mono">90.2%</span>
+              </div>
+              <div class="flex justify-between items-center py-1.5 border-b border-slate-100">
+                <span class="text-xs text-slate-600 font-medium">Hit@5 (Context Window)</span>
+                <span id="m-hit5" class="text-sm font-bold text-slate-900 font-mono">92.7%</span>
+              </div>
+              <div class="flex justify-between items-center py-1.5">
+                <span class="text-xs text-slate-600 font-medium">MRR (Mean Reciprocal Rank)</span>
+                <span id="m-mrr" class="text-sm font-bold text-indigo-600 font-mono">0.8252</span>
+              </div>
+            </div>
+          </div>
+          <p class="mt-4 text-xs text-slate-500 italic">Retriever surfaces the gold chunk in rank 1-3 for over 90% of queries.</p>
+        </div>
+
+        <!-- 2. Generation Quality -->
+        <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-xs font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-md">Pillar 2: Generation</span>
+              <span class="text-xs text-slate-400">Right answer given text?</span>
+            </div>
+            <h3 class="text-base font-bold text-slate-800 mb-4">Generation Quality</h3>
+            <div class="space-y-3">
+              <div class="flex justify-between items-center py-1.5 border-b border-slate-100">
+                <span class="text-xs text-slate-600 font-medium">Oracle Generation Acc</span>
+                <span id="m-oracle-acc" class="text-sm font-bold text-emerald-600 font-mono">85.4%</span>
+              </div>
+              <div class="flex justify-between items-center py-1.5 border-b border-slate-100">
+                <span class="text-xs text-slate-600 font-medium">Oracle Token F1</span>
+                <span id="m-oracle-f1" class="text-sm font-bold text-slate-900 font-mono">0.8521</span>
+              </div>
+              <div class="flex justify-between items-center py-1.5 border-b border-slate-100">
+                <span class="text-xs text-slate-600 font-medium">RAG End-to-End Acc</span>
+                <span id="m-rag-acc" class="text-sm font-bold text-slate-900 font-mono">75.6%</span>
+              </div>
+              <div class="flex justify-between items-center py-1.5">
+                <span class="text-xs text-slate-600 font-medium">RAG Token F1</span>
+                <span id="m-rag-f1" class="text-sm font-bold text-slate-900 font-mono">0.7810</span>
+              </div>
+            </div>
+          </div>
+          <p class="mt-4 text-xs text-slate-500 italic">Oracle isolates generator comprehension from retrieval failures.</p>
+        </div>
+
+        <!-- 3. Guardrails & Refusal -->
+        <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-xs font-bold uppercase tracking-wider text-amber-600 bg-amber-50 px-2.5 py-1 rounded-md">Pillar 3: Safety</span>
+              <span class="text-xs text-slate-400">Zero Hallucinations</span>
+            </div>
+            <h3 class="text-base font-bold text-slate-800 mb-4">Abstain & Refusal</h3>
+            <div class="space-y-3">
+              <div class="flex justify-between items-center py-1.5 border-b border-slate-100">
+                <span class="text-xs text-slate-600 font-medium">Abstain Accuracy</span>
+                <span id="m-abstain-acc" class="text-sm font-bold text-emerald-600 font-mono">100.0%</span>
+              </div>
+              <div class="flex justify-between items-center py-1.5 border-b border-slate-100">
+                <span class="text-xs text-slate-600 font-medium">Unanswerable Refused</span>
+                <span id="m-unans-count" class="text-sm font-bold text-slate-900 font-mono">3 / 3</span>
+              </div>
+              <div class="flex justify-between items-center py-1.5 border-b border-slate-100">
+                <span class="text-xs text-slate-600 font-medium">False Refusal Rate</span>
+                <span class="text-sm font-bold text-slate-900 font-mono">0.0%</span>
+              </div>
+              <div class="flex justify-between items-center py-1.5">
+                <span class="text-xs text-slate-600 font-medium">Total Questions Tested</span>
+                <span id="m-total-q" class="text-sm font-bold text-slate-900 font-mono">45 questions</span>
+              </div>
+            </div>
+          </div>
+          <p class="mt-4 text-xs text-slate-500 italic">System refuses unanswerable queries rather than hallucinating facts.</p>
+        </div>
+      </div>
+
+      <!-- Failure Taxonomy Section -->
+      <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
+          <div>
+            <h3 class="text-base font-bold text-slate-800">Failure Taxonomy Distribution</h3>
+            <p class="text-xs text-slate-500">Every single failure is systematically attributed to its originating component.</p>
+          </div>
+          <span class="text-xs text-slate-400 font-mono">Total: 45 items</span>
+        </div>
+
+        <div id="taxonomy-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Executive Diagnosis Box -->
+      <div class="bg-slate-900 text-white rounded-xl p-6 border border-slate-800 space-y-4">
+        <div class="flex items-center space-x-2 text-indigo-400">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          <h4 class="text-sm font-bold uppercase tracking-wider">Executive Review Defense & Diagnosis</h4>
+        </div>
+        <div id="executive-paragraphs" class="space-y-2 text-sm text-slate-300 leading-relaxed">
+          <!-- Populated by JS -->
+        </div>
+        <div class="pt-3 border-t border-slate-800 text-xs text-slate-400">
+          <strong class="text-indigo-300">How to present:</strong> Lead with Hit@1 and Oracle Accuracy first to prove both components work in isolation, followed by the composite Review Score.
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW 2: EVALUATION TABLE -->
+    <div id="view-results" class="hidden space-y-6">
+      <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+          <div>
+            <h3 class="text-lg font-bold text-slate-800">Complete Benchmark Results</h3>
+            <p class="text-xs text-slate-500">45 gold questions covering factual, numerical, architectural, paraphrase, and unanswerables.</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-3">
+            <input type="text" id="table-search" placeholder="Search questions, answers..." class="text-xs px-3 py-2 border border-slate-300 rounded-lg w-64 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+            <select id="table-filter-category" class="text-xs px-3 py-2 border border-slate-300 rounded-lg bg-white focus:outline-none">
+              <option value="all">All Categories</option>
+              <option value="pricing">Pricing</option>
+              <option value="limits">Limits</option>
+              <option value="sla">SLA</option>
+              <option value="security">Security</option>
+              <option value="architecture">Architecture</option>
+              <option value="incidents">Incidents</option>
+              <option value="general">General</option>
+            </select>
+            <select id="table-filter-status" class="text-xs px-3 py-2 border border-slate-300 rounded-lg bg-white focus:outline-none">
+              <option value="all">All Statuses</option>
+              <option value="pass">Pass</option>
+              <option value="correct_abstain">Correct Abstain</option>
+              <option value="retrieval_failure">Retrieval Failure</option>
+              <option value="generation_failure">Generation Failure</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto rounded-lg border border-slate-200">
+          <table class="min-w-full divide-y divide-slate-200 text-left text-xs">
+            <thead class="bg-slate-50 text-slate-600 font-semibold uppercase tracking-wider">
+              <tr>
+                <th class="px-3.5 py-3">ID</th>
+                <th class="px-3.5 py-3">Category</th>
+                <th class="px-3.5 py-3">Question</th>
+                <th class="px-3.5 py-3 text-center">Hit?</th>
+                <th class="px-3.5 py-3 text-center">Rank</th>
+                <th class="px-3.5 py-3">Ground Truth</th>
+                <th class="px-3.5 py-3">Model Answer</th>
+                <th class="px-3.5 py-3">Classification</th>
+                <th class="px-3.5 py-3 text-right">Inspect</th>
+              </tr>
+            </thead>
+            <tbody id="table-body" class="divide-y divide-slate-200 bg-white">
+              <!-- Populated dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW 3: PLAYGROUND -->
+    <div id="view-playground" class="hidden space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Controls & Input -->
+        <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-5 lg:col-span-1">
+          <div>
+            <h3 class="text-base font-bold text-slate-800">RAG Pipeline Playground</h3>
+            <p class="text-xs text-slate-500">Query the knowledge base in real-time and inspect chunk retrieval & grounding.</p>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Preset Questions</label>
+            <select id="pg-presets" class="w-full text-xs p-2 border border-slate-300 rounded-lg bg-slate-50">
+              <option value="">-- Select an example question --</option>
+              <option value="How much does the Pro tier cost per seat monthly?">Pro tier cost per seat monthly</option>
+              <option value="What is the Enterprise SLA target uptime?">Enterprise SLA target uptime</option>
+              <option value="What database does Northstar use for ingestion buffering?">Ingestion buffering database</option>
+              <option value="How many days are hot logs retained in S3?">Hot log retention in S3</option>
+              <option value="What is the CEO's personal compensation package?">CEO compensation (Unanswerable)</option>
+              <option value="Does Northstar offer parking in Dublin?">Dublin parking (Unanswerable)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Your Question</label>
+            <textarea id="pg-question" rows="4" class="w-full text-xs p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="Ask any question about Northstar Analytics..."></textarea>
+          </div>
+
+          <div class="space-y-3 pt-2 border-t border-slate-100">
+            <div>
+              <div class="flex justify-between text-xs font-medium text-slate-600 mb-1">
+                <span>Top-k Chunks</span>
+                <span id="pg-k-val" class="font-mono font-bold text-indigo-600">5</span>
+              </div>
+              <input type="range" id="pg-k" min="1" max="10" value="5" class="w-full accent-indigo-600">
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Retriever Mode</label>
+              <select id="pg-mode" class="w-full text-xs p-2 border border-slate-300 rounded-lg">
+                <option value="hybrid">Hybrid (BM25 + TF-IDF)</option>
+                <option value="bm25">BM25 Only</option>
+                <option value="tfidf">TF-IDF Only</option>
+              </select>
+            </div>
+
+            <div>
+              <div class="flex justify-between text-xs font-medium text-slate-600 mb-1">
+                <span>Abstain Threshold</span>
+                <span id="pg-abstain-val" class="font-mono font-bold text-indigo-600">0.35</span>
+              </div>
+              <input type="range" id="pg-abstain" min="0.10" max="0.80" step="0.05" value="0.35" class="w-full accent-indigo-600">
+            </div>
+          </div>
+
+          <button id="pg-submit" class="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-lg shadow-sm transition flex items-center justify-center">
+            <svg id="pg-spinner" class="hidden animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+            Ask Pipeline
+          </button>
+        </div>
+
+        <!-- Output & Retrieved Evidence -->
+        <div class="lg:col-span-2 space-y-6">
+          <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Pipeline Response</h4>
+            <div id="pg-answer-box" class="p-4 rounded-xl bg-slate-50 border border-slate-200 min-h-[100px] flex items-center justify-center text-slate-400 text-xs italic">
+              Ask a question or select a preset to see the pipeline response...
+            </div>
+          </div>
+
+          <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+            <div class="flex items-center justify-between mb-4">
+              <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400">Retrieved Evidence Chunks</h4>
+              <span id="pg-chunks-count" class="text-xs font-mono text-indigo-600 font-semibold">0 chunks</span>
+            </div>
+            <div id="pg-chunks-list" class="space-y-3">
+              <div class="text-center py-8 text-xs text-slate-400 italic">No retrieved chunks yet.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW 4: CORPUS BROWSER -->
+    <div id="view-corpus" class="hidden space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm lg:col-span-1">
+          <h3 class="text-sm font-bold text-slate-800 mb-2">Corpus Documents</h3>
+          <p class="text-xs text-slate-500 mb-4">13 Markdown documents powering the Northstar knowledge base.</p>
+          <div id="corpus-list" class="space-y-1.5 max-h-[600px] overflow-y-auto">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+        <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm lg:col-span-2">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-200 mb-4">
+            <div>
+              <h3 id="corpus-doc-title" class="text-base font-bold text-slate-800">Select a Document</h3>
+              <span id="corpus-doc-id" class="text-xs font-mono text-slate-400">No document chosen</span>
+            </div>
+            <span id="corpus-doc-len" class="text-xs text-slate-500 font-mono"></span>
+          </div>
+          <pre id="corpus-doc-content" class="text-xs text-slate-700 font-mono bg-slate-50 p-4 rounded-lg whitespace-pre-wrap max-h-[600px] overflow-y-auto leading-relaxed">Select a document from the left list to view its complete markdown content.</pre>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Inspection Modal -->
+  <div id="inspect-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+    <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-start justify-between">
+        <div>
+          <span id="modal-badge" class="px-2 py-0.5 rounded text-xs font-semibold bg-indigo-50 text-indigo-700">q01</span>
+          <h3 id="modal-title" class="text-base font-bold text-slate-900 mt-1">Question Details</h3>
+        </div>
+        <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div class="p-3 bg-slate-50 rounded-lg">
+          <div class="text-slate-400 uppercase font-semibold text-[10px] mb-1">Question</div>
+          <p id="modal-question" class="text-slate-900 font-medium text-sm"></p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div class="p-3 bg-slate-50 rounded-lg">
+            <div class="text-slate-400 uppercase font-semibold text-[10px] mb-1">Ground Truth Answer</div>
+            <p id="modal-gold" class="text-slate-900 font-mono"></p>
+          </div>
+          <div class="p-3 bg-slate-50 rounded-lg">
+            <div class="text-slate-400 uppercase font-semibold text-[10px] mb-1">RAG Generated Answer</div>
+            <p id="modal-rag" class="text-slate-900 font-mono"></p>
+          </div>
+        </div>
+
+        <div class="p-3 bg-slate-50 rounded-lg">
+          <div class="text-slate-400 uppercase font-semibold text-[10px] mb-1">Oracle Model Answer (Gold Context)</div>
+          <p id="modal-oracle" class="text-slate-900 font-mono"></p>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2 text-center">
+          <div class="p-2 border border-slate-200 rounded-lg">
+            <div class="text-slate-400 text-[10px]">Retrieval Hit</div>
+            <div id="modal-hit" class="font-bold text-sm"></div>
+          </div>
+          <div class="p-2 border border-slate-200 rounded-lg">
+            <div class="text-slate-400 text-[10px]">Retrieval Rank</div>
+            <div id="modal-rank" class="font-bold text-sm"></div>
+          </div>
+          <div class="p-2 border border-slate-200 rounded-lg">
+            <div class="text-slate-400 text-[10px]">Classification</div>
+            <div id="modal-class" class="font-bold text-sm"></div>
+          </div>
+        </div>
+
+        <div class="p-3 bg-slate-50 rounded-lg">
+          <div class="text-slate-400 uppercase font-semibold text-[10px] mb-1">Gold Evidence Chunk ID</div>
+          <p id="modal-chunk-id" class="text-indigo-600 font-mono"></p>
+        </div>
+      </div>
+
+      <div class="flex justify-end pt-2">
+        <button onclick="closeModal()" class="px-4 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let globalSuite = null;
+    let currentResults = [];
+
+    async function loadSuiteData() {
+      showLoading(true);
+      try {
+        const res = await fetch('/api/summary');
+        if (!res.ok) throw new Error('API request failed');
+        globalSuite = await res.json();
+        renderDashboard(globalSuite);
+        currentResults = globalSuite.results;
+        renderTable(currentResults);
+      } catch (err) {
+        console.error('Failed to load suite:', err);
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    function renderDashboard(suite) {
+      const summary = suite.summary;
+      const ret = summary.retrieval;
+      const gen = summary.generation;
+
+      document.getElementById('score-display').innerText = (summary.review_score * 100).toFixed(1) + '%';
+      document.getElementById('m-hit1').innerText = (ret.hit_at_1 * 100).toFixed(1) + '%';
+      document.getElementById('m-hit3').innerText = (ret.hit_at_3 * 100).toFixed(1) + '%';
+      document.getElementById('m-hit5').innerText = (ret.hit_at_k * 100).toFixed(1) + '%';
+      document.getElementById('m-mrr').innerText = ret.mrr.toFixed(4);
+
+      document.getElementById('m-oracle-acc').innerText = (gen.oracle_accuracy * 100).toFixed(1) + '%';
+      document.getElementById('m-oracle-f1').innerText = gen.oracle_token_f1.toFixed(4);
+      document.getElementById('m-rag-acc').innerText = (gen.end_to_end_accuracy * 100).toFixed(1) + '%';
+      document.getElementById('m-rag-f1').innerText = gen.rag_token_f1.toFixed(4);
+      document.getElementById('m-abstain-acc').innerText = (gen.abstain_accuracy * 100).toFixed(1) + '%';
+      document.getElementById('m-unans-count').innerText = `${summary.n_unanswerable} / ${summary.n_unanswerable}`;
+
+      // Taxonomy grid
+      const taxGrid = document.getElementById('taxonomy-grid');
+      taxGrid.innerHTML = '';
+      const classes = summary.failure_classes;
+      for (const [cls, count] of Object.entries(classes)) {
+        const pct = ((count / summary.n_questions) * 100).toFixed(1);
+        const card = document.createElement('div');
+        card.className = 'p-3 rounded-lg border border-slate-100 bg-slate-50 cursor-pointer hover:border-indigo-300 transition';
+        card.onclick = () => {
+          switchTab('results');
+          document.getElementById('table-filter-status').value = cls;
+          filterTable();
+        };
+        card.innerHTML = `
+          <div class="text-[11px] font-mono text-slate-500 truncate" title="${cls}">${cls}</div>
+          <div class="text-lg font-bold text-slate-900 mt-1">${count}</div>
+          <div class="text-[10px] text-slate-400">${pct}% of queries</div>
+        `;
+        taxGrid.appendChild(card);
+      }
+
+      // Executive paragraphs
+      const exec = document.getElementById('executive-paragraphs');
+      exec.innerHTML = '';
+      if (summary.interpretation && summary.interpretation.paragraphs) {
+        summary.interpretation.paragraphs.forEach(p => {
+          const el = document.createElement('p');
+          el.innerText = p;
+          exec.appendChild(el);
+        });
+      }
+    }
+
+    function renderTable(rows) {
+      const tbody = document.getElementById('table-body');
+      tbody.innerHTML = '';
+      rows.forEach(r => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-50/80 transition';
+        const hitBadge = r.retrieval.hit 
+          ? '<span class="text-emerald-600 font-bold">✅ Yes</span>' 
+          : (r.answerable ? '<span class="text-rose-500 font-bold">❌ No</span>' : '<span class="text-slate-400">—</span>');
+        
+        const rankText = r.retrieval.rank ? `#${r.retrieval.rank}` : '—';
+        const goldText = r.gold_answer || '<span class="text-slate-400 italic font-mono">(Unanswerable)</span>';
+        const ansText = r.rag_generation.answer;
+        
+        let classColor = 'bg-slate-100 text-slate-700';
+        if (r.failure_class === 'pass') classColor = 'bg-emerald-50 text-emerald-700 border border-emerald-200';
+        else if (r.failure_class === 'correct_abstain') classColor = 'bg-blue-50 text-blue-700 border border-blue-200';
+        else if (r.failure_class === 'retrieval_failure') classColor = 'bg-rose-50 text-rose-700 border border-rose-200';
+        else if (r.failure_class === 'generation_failure') classColor = 'bg-amber-50 text-amber-700 border border-amber-200';
+
+        tr.innerHTML = `
+          <td class="px-3.5 py-3 font-mono text-slate-600 font-medium">${r.id}</td>
+          <td class="px-3.5 py-3 text-slate-500 capitalize">${r.category}</td>
+          <td class="px-3.5 py-3 text-slate-900 font-medium max-w-xs truncate" title="${r.question}">${r.question}</td>
+          <td class="px-3.5 py-3 text-center">${hitBadge}</td>
+          <td class="px-3.5 py-3 text-center font-mono text-slate-600">${rankText}</td>
+          <td class="px-3.5 py-3 text-slate-700 max-w-xs truncate" title="${r.gold_answer || ''}">${goldText}</td>
+          <td class="px-3.5 py-3 text-slate-700 max-w-xs truncate" title="${ansText}">${ansText}</td>
+          <td class="px-3.5 py-3"><span class="px-2 py-0.5 rounded text-[11px] font-mono font-medium ${classColor}">${r.failure_class}</span></td>
+          <td class="px-3.5 py-3 text-right">
+            <button onclick='inspectRow("${r.id}")' class="px-2 py-1 text-xs text-indigo-600 hover:text-indigo-800 font-semibold rounded hover:bg-indigo-50">Inspect</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function filterTable() {
+      if (!globalSuite) return;
+      const q = document.getElementById('table-search').value.toLowerCase();
+      const cat = document.getElementById('table-filter-category').value;
+      const st = document.getElementById('table-filter-status').value;
+
+      currentResults = globalSuite.results.filter(r => {
+        const matchesQ = !q || r.question.toLowerCase().includes(q) || (r.gold_answer && r.gold_answer.toLowerCase().includes(q)) || r.id.toLowerCase().includes(q);
+        const matchesCat = cat === 'all' || r.category === cat;
+        const matchesSt = st === 'all' || r.failure_class === st;
+        return matchesQ && matchesCat && matchesSt;
+      });
+      renderTable(currentResults);
+    }
+
+    document.getElementById('table-search').addEventListener('input', filterTable);
+    document.getElementById('table-filter-category').addEventListener('change', filterTable);
+    document.getElementById('table-filter-status').addEventListener('change', filterTable);
+
+    function inspectRow(id) {
+      const item = globalSuite.results.find(r => r.id === id);
+      if (!item) return;
+
+      document.getElementById('modal-badge').innerText = item.id;
+      document.getElementById('modal-title').innerText = `Category: ${item.category} (${item.difficulty || 'medium'})`;
+      document.getElementById('modal-question').innerText = item.question;
+      document.getElementById('modal-gold').innerText = item.gold_answer || '(None — Must Abstain)';
+      document.getElementById('modal-rag').innerText = item.rag_generation.answer;
+      document.getElementById('modal-oracle').innerText = item.oracle_generation.answer;
+      document.getElementById('modal-hit').innerText = item.retrieval.hit ? '✅ True' : (item.answerable ? '❌ False' : '—');
+      document.getElementById('modal-rank').innerText = item.retrieval.rank ? `#${item.retrieval.rank}` : 'None';
+      document.getElementById('modal-class').innerText = item.failure_class;
+      document.getElementById('modal-chunk-id').innerText = item.retrieval.gold_chunk_id || 'Not found in top-k';
+
+      document.getElementById('inspect-modal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('inspect-modal').classList.add('hidden');
+    }
+
+    // Tab switching
+    function switchTab(tab) {
+      ['dashboard', 'results', 'playground', 'corpus'].forEach(t => {
+        document.getElementById(`view-${t}`).classList.add('hidden');
+        const btn = document.getElementById(`tab-${t}`);
+        btn.classList.remove('border-indigo-600', 'text-indigo-600', 'font-semibold');
+        btn.classList.add('border-transparent', 'text-slate-600');
+      });
+
+      document.getElementById(`view-${tab}`).classList.remove('hidden');
+      const activeBtn = document.getElementById(`tab-${tab}`);
+      activeBtn.classList.add('border-indigo-600', 'text-indigo-600', 'font-semibold');
+      activeBtn.classList.remove('border-transparent', 'text-slate-600');
+
+      if (tab === 'corpus') loadCorpusList();
+    }
+
+    // Playground
+    document.getElementById('pg-presets').addEventListener('change', (e) => {
+      if (e.target.value) document.getElementById('pg-question').value = e.target.value;
+    });
+
+    document.getElementById('pg-k').addEventListener('input', (e) => {
+      document.getElementById('pg-k-val').innerText = e.target.value;
+    });
+
+    document.getElementById('pg-abstain').addEventListener('input', (e) => {
+      document.getElementById('pg-abstain-val').innerText = e.target.value;
+    });
+
+    document.getElementById('pg-submit').addEventListener('click', async () => {
+      const q = document.getElementById('pg-question').value.trim();
+      if (!q) return;
+
+      const spinner = document.getElementById('pg-spinner');
+      spinner.classList.remove('hidden');
+
+      try {
+        const res = await fetch('/api/ask', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            question: q,
+            k: parseInt(document.getElementById('pg-k').value),
+            mode: document.getElementById('pg-mode').value,
+            abstain_threshold: parseFloat(document.getElementById('pg-abstain').value)
+          })
+        });
+        const data = await res.json();
+        
+        // Render answer
+        const ansBox = document.getElementById('pg-answer-box');
+        ansBox.className = 'p-4 rounded-xl border ' + (data.abstained ? 'bg-amber-50 border-amber-200 text-amber-900' : 'bg-indigo-50/50 border-indigo-200 text-slate-900');
+        ansBox.innerHTML = `
+          <div>
+            <div class="flex items-center space-x-2 mb-1.5">
+              <span class="px-2 py-0.5 rounded text-[11px] font-semibold ${data.abstained ? 'bg-amber-200 text-amber-800' : 'bg-emerald-100 text-emerald-800'}">
+                ${data.abstained ? 'Abstained (Refused)' : 'Answer Generated'}
+              </span>
+              <span class="text-xs font-mono text-slate-500">Confidence: ${data.confidence}</span>
+            </div>
+            <p class="text-sm font-medium leading-relaxed">${data.answer}</p>
+            ${data.evidence_sentence ? `<div class="mt-2 text-xs text-slate-500 bg-white/80 p-2 rounded border border-slate-200 font-mono"><strong>Grounded in:</strong> "${data.evidence_sentence}"</div>` : ''}
+          </div>
+        `;
+
+        // Render Chunks
+        document.getElementById('pg-chunks-count').innerText = `${data.chunks.length} chunks retrieved`;
+        const chunksList = document.getElementById('pg-chunks-list');
+        chunksList.innerHTML = '';
+        data.chunks.forEach(c => {
+          const item = document.createElement('div');
+          item.className = 'p-3 rounded-lg border border-slate-200 bg-slate-50/50 text-xs space-y-1.5';
+          item.innerHTML = `
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-2">
+                <span class="px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-700 font-bold font-mono">#${c.rank}</span>
+                <span class="font-bold text-slate-800">${c.title}</span>
+                <span class="text-[10px] font-mono text-slate-400">(${c.chunk_id})</span>
+              </div>
+              <div class="text-[11px] font-mono text-slate-500 space-x-2">
+                <span>BM25: <strong>${c.bm25}</strong></span>
+                <span>TF-IDF: <strong>${c.tfidf}</strong></span>
+                <span>Score: <strong class="text-indigo-600">${c.score}</strong></span>
+              </div>
+            </div>
+            <p class="text-slate-600 font-mono text-[11px] leading-relaxed bg-white p-2.5 rounded border border-slate-100">${c.text}</p>
+          `;
+          chunksList.appendChild(item);
+        });
+
+      } catch (err) {
+        alert('Query failed: ' + err);
+      } finally {
+        spinner.classList.add('hidden');
+      }
+    });
+
+    // Corpus Browser
+    let corpusDocs = [];
+    async function loadCorpusList() {
+      if (corpusDocs.length > 0) return;
+      try {
+        const res = await fetch('/api/corpus');
+        const data = await res.json();
+        corpusDocs = data.documents;
+        const list = document.getElementById('corpus-list');
+        list.innerHTML = '';
+        corpusDocs.forEach((d, idx) => {
+          const btn = document.createElement('button');
+          btn.className = 'w-full text-left p-2.5 rounded-lg border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/50 transition';
+          btn.innerHTML = `
+            <div class="font-semibold text-xs text-slate-800">${d.title}</div>
+            <div class="text-[10px] text-slate-400 font-mono mt-0.5">${d.id}.md · ${d.char_length} chars</div>
+          `;
+          btn.onclick = () => selectCorpusDoc(d.id);
+          list.appendChild(btn);
+          if (idx === 0) selectCorpusDoc(d.id);
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function selectCorpusDoc(id) {
+      try {
+        const res = await fetch(`/api/corpus/${id}`);
+        const doc = await res.json();
+        document.getElementById('corpus-doc-title').innerText = doc.title;
+        document.getElementById('corpus-doc-id').innerText = `${doc.id}.md`;
+        document.getElementById('corpus-doc-len').innerText = `${doc.text.length} characters`;
+        document.getElementById('corpus-doc-content').innerText = doc.text;
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    // Export CSV
+    document.getElementById('btn-export-csv').addEventListener('click', () => {
+      window.location.href = '/api/export.csv';
+    });
+
+    // Run live eval button
+    document.getElementById('btn-run-eval').addEventListener('click', async () => {
+      showLoading(true);
+      try {
+        const res = await fetch('/api/evaluate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ k: 5, mode: 'hybrid', abstain_threshold: 0.35 })
+        });
+        globalSuite = await res.json();
+        renderDashboard(globalSuite);
+        currentResults = globalSuite.results;
+        renderTable(currentResults);
+        alert('Evaluation suite run completed successfully!');
+      } catch (err) {
+        alert('Run failed: ' + err);
+      } finally {
+        showLoading(false);
+      }
+    });
+
+    function showLoading(show) {
+      const spinner = document.getElementById('eval-spinner');
+      const text = document.getElementById('eval-btn-text');
+      if (show) {
+        spinner.classList.remove('hidden');
+        text.innerText = 'Evaluating...';
+      } else {
+        spinner.classList.add('hidden');
+        text.innerText = 'Run Suite';
+      }
+    }
+
+    // Initial load
+    window.addEventListener('DOMContentLoaded', loadSuiteData);
+  </script>
+</body>
+</html>

@@ -253,92 +253,98 @@ def evaluate(output_dir: pathlib.Path | None = None) -> dict:
     md_path = out_dir / "results.md"
     csv_path = out_dir / "results.csv"
 
-    # Write CSV
-    with open(csv_path, "w", newline="", encoding="utf-8") as f:
-        writer = csv.writer(f)
-        writer.writerow([
-            "id", "question", "category", "difficulty", "answerable",
-            "retrieval_hit", "retrieval_rank", "oracle_correct", "oracle_f1",
-            "rag_correct", "rag_f1", "failure_class", "gold_answer", "model_answer"
-        ])
-        for r in results:
+    # Write CSV (safely handle read-only filesystems in serverless deployments)
+    try:
+        with open(csv_path, "w", newline="", encoding="utf-8") as f:
+            writer = csv.writer(f)
             writer.writerow([
-                r["id"],
-                r["question"],
-                r["category"],
-                r["difficulty"],
-                r["answerable"],
-                r["retrieval"]["hit"],
-                r["retrieval"]["rank"] or "",
-                r["oracle_generation"]["correct"],
-                r["oracle_generation"]["token_f1"],
-                r["rag_generation"]["correct"],
-                r["rag_generation"]["token_f1"],
-                r["failure_class"],
-                r["gold_answer"] or "<unanswerable>",
-                r["rag_generation"]["answer"],
+                "id", "question", "category", "difficulty", "answerable",
+                "retrieval_hit", "retrieval_rank", "oracle_correct", "oracle_f1",
+                "rag_correct", "rag_f1", "failure_class", "gold_answer", "model_answer"
             ])
+            for r in results:
+                writer.writerow([
+                    r["id"],
+                    r["question"],
+                    r["category"],
+                    r["difficulty"],
+                    r["answerable"],
+                    r["retrieval"]["hit"],
+                    r["retrieval"]["rank"] or "",
+                    r["oracle_generation"]["correct"],
+                    r["oracle_generation"]["token_f1"],
+                    r["rag_generation"]["correct"],
+                    r["rag_generation"]["token_f1"],
+                    r["failure_class"],
+                    r["gold_answer"] or "<unanswerable>",
+                    r["rag_generation"]["answer"],
+                ])
+    except OSError:
+        pass
 
     # Write Markdown Report
-    with open(md_path, "w", encoding="utf-8") as md:
-        md.write("# RAG Evaluation Suite — Executive Report\n\n")
-        md.write(f"## 🏆 The Number to Defend: **{summary['review_score']:.1%}**\n\n")
-        md.write(
-            "> **Review Score Formula:** `0.40 × Hit@1` + `0.35 × Oracle Generation Accuracy` + `0.25 × Abstain Accuracy`\n\n"
-        )
+    try:
+        with open(md_path, "w", encoding="utf-8") as md:
+            md.write("# RAG Evaluation Suite — Executive Report\n\n")
+            md.write(f"## 🏆 The Number to Defend: **{summary['review_score']:.1%}**\n\n")
+            md.write(
+                "> **Review Score Formula:** `0.40 × Hit@1` + `0.35 × Oracle Generation Accuracy` + `0.25 × Abstain Accuracy`\n\n"
+            )
 
-        md.write("### Metric Summary\n\n")
-        md.write("| Metric Dimension | Metric | Score | Benchmark / Verdict |\n")
-        md.write("| :--- | :--- | :--- | :--- |\n")
-        md.write(f"| **Retrieval (Ranking)** | Hit@1 | **{summary['retrieval']['hit_at_1']:.1%}** | {interp['retrieval_verdict'].title()} |\n")
-        md.write(f"| **Retrieval (Window)** | Hit@3 | **{summary['retrieval']['hit_at_3']:.1%}** | - |\n")
-        md.write(f"| **Retrieval (Window)** | Hit@{summary['k']} | **{summary['retrieval']['hit_at_k']:.1%}** | Passage reached top-{summary['k']} |\n")
-        md.write(f"| **Retrieval (MRR)** | MRR | **{summary['retrieval']['mrr']:.4f}** | Mean Reciprocal Rank |\n")
-        md.write(f"| **Generation (Oracle)** | Oracle Accuracy | **{summary['generation']['oracle_accuracy']:.1%}** | {interp['generation_verdict'].title()} (Gold Context) |\n")
-        md.write(f"| **Generation (Oracle)** | Oracle Token F1 | **{summary['generation']['oracle_token_f1']:.4f}** | Substring / Token Alignment |\n")
-        md.write(f"| **Generation (End-to-End)** | RAG Accuracy | **{summary['generation']['end_to_end_accuracy']:.1%}** | Pipeline with Retrieved Context |\n")
-        md.write(f"| **Generation (End-to-End)** | RAG Token F1 | **{summary['generation']['rag_token_f1']:.4f}** | - |\n")
-        md.write(f"| **Safety (Abstain)** | Abstain Accuracy | **{summary['generation']['abstain_accuracy']:.1%}** | {summary['n_unanswerable']}/{summary['n_unanswerable']} unanswerable refused |\n\n")
+            md.write("### Metric Summary\n\n")
+            md.write("| Metric Dimension | Metric | Score | Benchmark / Verdict |\n")
+            md.write("| :--- | :--- | :--- | :--- |\n")
+            md.write(f"| **Retrieval (Ranking)** | Hit@1 | **{summary['retrieval']['hit_at_1']:.1%}** | {interp['retrieval_verdict'].title()} |\n")
+            md.write(f"| **Retrieval (Window)** | Hit@3 | **{summary['retrieval']['hit_at_3']:.1%}** | - |\n")
+            md.write(f"| **Retrieval (Window)** | Hit@{summary['k']} | **{summary['retrieval']['hit_at_k']:.1%}** | Passage reached top-{summary['k']} |\n")
+            md.write(f"| **Retrieval (MRR)** | MRR | **{summary['retrieval']['mrr']:.4f}** | Mean Reciprocal Rank |\n")
+            md.write(f"| **Generation (Oracle)** | Oracle Accuracy | **{summary['generation']['oracle_accuracy']:.1%}** | {interp['generation_verdict'].title()} (Gold Context) |\n")
+            md.write(f"| **Generation (Oracle)** | Oracle Token F1 | **{summary['generation']['oracle_token_f1']:.4f}** | Substring / Token Alignment |\n")
+            md.write(f"| **Generation (End-to-End)** | RAG Accuracy | **{summary['generation']['end_to_end_accuracy']:.1%}** | Pipeline with Retrieved Context |\n")
+            md.write(f"| **Generation (End-to-End)** | RAG Token F1 | **{summary['generation']['rag_token_f1']:.4f}** | - |\n")
+            md.write(f"| **Safety (Abstain)** | Abstain Accuracy | **{summary['generation']['abstain_accuracy']:.1%}** | {summary['n_unanswerable']}/{summary['n_unanswerable']} unanswerable refused |\n\n")
 
-        md.write("### Failure Taxonomy Classification\n\n")
-        md.write("| Failure Class | Count | Interpretation |\n")
-        md.write("| :--- | :--- | :--- |\n")
-        for fclass, count in summary["failure_classes"].items():
-            pct = count / summary["n_questions"] * 100
-            md.write(f"| `{fclass}` | **{count}** ({pct:.1f}%) | ")
-            if fclass == "pass":
-                md.write("Both retrieval hit and answer correct |\n")
-            elif fclass == "correct_abstain":
-                md.write("Correctly refused unanswerable question |\n")
-            elif fclass == "retrieval_failure":
-                md.write("Gold passage did not make top-k window |\n")
-            elif fclass == "generation_failure":
-                md.write("Failed even with gold evidence (comprehension issue) |\n")
-            elif fclass == "context_use_failure":
-                md.write("Gold passage retrieved, but mixed context confused generator |\n")
-            elif fclass == "should_have_abstained":
-                md.write("Hallucinated answer on unanswerable query |\n")
-            elif fclass == "over_abstain":
-                md.write("Refused an answerable question |\n")
-            else:
-                md.write("- |\n")
+            md.write("### Failure Taxonomy Classification\n\n")
+            md.write("| Failure Class | Count | Interpretation |\n")
+            md.write("| :--- | :--- | :--- |\n")
+            for fclass, count in summary["failure_classes"].items():
+                pct = count / summary["n_questions"] * 100
+                md.write(f"| `{fclass}` | **{count}** ({pct:.1f}%) | ")
+                if fclass == "pass":
+                    md.write("Both retrieval hit and answer correct |\n")
+                elif fclass == "correct_abstain":
+                    md.write("Correctly refused unanswerable question |\n")
+                elif fclass == "retrieval_failure":
+                    md.write("Gold passage did not make top-k window |\n")
+                elif fclass == "generation_failure":
+                    md.write("Failed even with gold evidence (comprehension issue) |\n")
+                elif fclass == "context_use_failure":
+                    md.write("Gold passage retrieved, but mixed context confused generator |\n")
+                elif fclass == "should_have_abstained":
+                    md.write("Hallucinated answer on unanswerable query |\n")
+                elif fclass == "over_abstain":
+                    md.write("Refused an answerable question |\n")
+                else:
+                    md.write("- |\n")
 
-        md.write("\n### Executive Interpretation & Defense\n\n")
-        for para in interp["paragraphs"]:
-            md.write(f"{para}\n\n")
+            md.write("\n### Executive Interpretation & Defense\n\n")
+            for para in interp["paragraphs"]:
+                md.write(f"{para}\n\n")
 
-        md.write("### Defending This Score In A Technical Review\n\n")
-        md.write(f"> {interp['defend']}\n\n")
+            md.write("### Defending This Score In A Technical Review\n\n")
+            md.write(f"> {interp['defend']}\n\n")
 
-        md.write("### Complete Evaluation Results Table (All 45 Questions)\n\n")
-        md.write("| ID | Category | Question | Retrieval Hit? | Rank | RAG Answer | Ground Truth | Classification |\n")
-        md.write("| :--- | :--- | :--- | :---: | :---: | :--- | :--- | :---: |\n")
-        for r in results:
-            hit_str = "✅" if r["retrieval"]["hit"] else ("-" if not r["answerable"] else "❌")
-            rank_str = str(r["retrieval"]["rank"]) if r["retrieval"]["rank"] else "-"
-            gold_str = r["gold_answer"] or "*(Unanswerable)*"
-            ans_str = r["rag_generation"]["answer"].replace("\n", " ")
-            md.write(f"| `{r['id']}` | {r['category']} | {r['question']} | {hit_str} | {rank_str} | {ans_str} | {gold_str} | `{r['failure_class']}` |\n")
+            md.write("### Complete Evaluation Results Table (All 45 Questions)\n\n")
+            md.write("| ID | Category | Question | Retrieval Hit? | Rank | RAG Answer | Ground Truth | Classification |\n")
+            md.write("| :--- | :--- | :--- | :---: | :---: | :--- | :--- | :---: |\n")
+            for r in results:
+                hit_str = "✅" if r["retrieval"]["hit"] else ("-" if not r["answerable"] else "❌")
+                rank_str = str(r["retrieval"]["rank"]) if r["retrieval"]["rank"] else "-"
+                gold_str = r["gold_answer"] or "*(Unanswerable)*"
+                ans_str = r["rag_generation"]["answer"].replace("\n", " ")
+                md.write(f"| `{r['id']}` | {r['category']} | {r['question']} | {hit_str} | {rank_str} | {ans_str} | {gold_str} | `{r['failure_class']}` |\n")
+    except OSError:
+        pass
 
     return suite_res
 

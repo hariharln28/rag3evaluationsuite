@@ -62,7 +62,23 @@ python run_evaluation.py
 python -m evaluation.evaluate
 ```
 
-### 3. Review Generated Outputs
+### 3. Deploy to Vercel (Web UI & Serverless API)
+
+#### Option A: 1-Click via Vercel Dashboard (Recommended)
+1. Go to [vercel.com/new](https://vercel.com/new).
+2. Select your repository: `hariharln28/rag3evaluationsuite`.
+3. Keep default settings (Vercel automatically detects `vercel.json` and Python serverless functions).
+4. Click **Deploy**.
+
+#### Option B: Via Vercel CLI
+```bash
+npm install -g vercel
+vercel login
+vercel --prod
+```
+
+### 4. Review Outputs & Live Bench
+- **Live Web Dashboard & Playground:** `http://127.0.0.1:8000` (Local) or your Vercel deployment URL
 - **Markdown Report & Table:** [`results.md`](results.md)
 - **CSV Export:** [`results.csv`](results.csv)
 
@@ -72,6 +88,11 @@ python -m evaluation.evaluate
 
 ```text
 rag3evaluationsuite/
+├── api/
+│   └── index.py           # FastAPI Serverless backend for Vercel
+├── public/
+│   └── index.html         # Interactive Bench Dashboard & Playground UI
+├── vercel.json            # Vercel deployment routing configuration
 ├── data/
 │   ├── corpus/            # 13 technical markdown source docs (Northstar Analytics)
 │   └── gold/
