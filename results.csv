@@ -1,0 +1,46 @@
+id,question,category,difficulty,answerable,retrieval_hit,retrieval_rank,oracle_correct,oracle_f1,rag_correct,rag_f1,failure_class,gold_answer,model_answer
+q01,When was Northstar Analytics founded?,company,easy,True,True,1,True,1.0,True,1.0,pass,2017,2017
+q02,In which city is Northstar headquartered?,company,easy,True,True,4,True,1.0,True,1.0,pass,"Portland, Oregon","Portland, Oregon"
+q03,How many people did Northstar employ as of March 2026?,company,easy,True,True,2,True,1.0,True,1.0,pass,420,420
+q04,Who led Northstar's Series C round?,company,easy,True,True,1,True,1.0,True,1.0,pass,Horizon Ventures,Horizon Ventures
+q05,How much did Northstar raise in its Series C?,company,easy,True,True,1,True,1.0,True,1.0,pass,$90 million,$90 million
+q06,Who is the CEO of Northstar Analytics?,leadership,easy,True,True,1,True,1.0,True,1.0,pass,Mara Ellison,Mara Ellison
+q07,Who is Northstar's Chief Technology Officer?,leadership,easy,True,True,1,True,1.0,True,1.0,pass,Priya Raman,Priya Raman
+q08,When did David Cho join as CISO?,leadership,medium,True,True,1,True,1.0,True,1.0,pass,January 2023,January 2023
+q09,When did Pulse launch?,products,easy,True,True,4,True,1.0,True,1.0,pass,March 2019,March 2019
+q10,What is Helix?,products,easy,True,True,3,True,1.0,True,1.0,pass,a managed feature store,a managed feature store
+q11,When did Atlas launch?,products,easy,True,True,2,True,1.0,True,1.0,pass,October 2023,October 2023
+q12,What is Pulse's default alert evaluation interval?,products,medium,True,True,1,True,1.0,True,1.0,pass,15 seconds,15 seconds
+q13,How many semantic domains can a Team plan define in Atlas?,products,medium,True,True,1,True,1.0,True,1.0,pass,12,12
+q14,What is the monthly list price of the Starter plan?,pricing,easy,True,True,1,True,1.0,True,1.0,pass,$499 per month,$499 per month
+q15,How much does Enterprise cost per month?,pricing,easy,True,True,1,True,1.0,True,1.0,pass,"$4,800 per month","$4,800 per month"
+q16,What is the annual prepay discount?,pricing,easy,True,True,1,True,1.0,True,1.0,pass,18%,18%
+q17,Can a Starter workspace buy Atlas?,pricing,medium,True,True,1,True,1.0,True,1.0,pass,No,No
+q18,What uptime SLA does Enterprise receive?,sla,easy,True,True,1,True,1.0,True,1.0,pass,99.9%,99.9%
+q19,What is the maximum monthly service credit for an SLA miss?,sla,medium,True,True,1,True,1.0,True,1.0,pass,50% of the monthly fee,50% of the monthly fee
+q20,What is the Enterprise Sev-1 support response target?,sla,medium,True,True,1,True,0.125,True,0.125,pass,1 hour,"Support response targets: Starter email within 24 hours; Team email or chat within 8 hours during support hours; Enterprise 1-hour response for Sev-1 and Sev-2, including phone."
+q21,What encryption is used for data at rest?,security,easy,True,True,1,True,0.1176,True,0.1176,pass,AES-256,Data is encrypted with AES-256 at rest and TLS 1.3 in transit. Customer encryption keys may be supplied via AWS KMS or GCP Cloud KMS on Enterprise (customer-managed keys).
+q22,Which data residency regions does Northstar offer?,security,easy,True,True,1,True,1.0,True,1.0,pass,United States and European Union,United States and European Union
+q23,Does Northstar offer a HIPAA Business Associate Agreement?,security,medium,True,True,1,True,1.0,True,1.0,pass,No,No
+q24,What stream system does ingestion use?,architecture,easy,True,True,1,True,0.0714,True,0.0714,pass,Apache Kafka,Ingestion uses Apache Kafka. Stream processors written in Go write compressed columns into ClickHouse for analytics and into a Redis-backed online store for Pulse alerts.
+q25,What is the p99 objective for cached Pulse dashboard queries?,architecture,medium,True,True,1,True,1.0,True,1.0,pass,140 milliseconds,140 milliseconds
+q26,Does Northstar use Pinecone in production?,architecture,medium,True,True,1,True,1.0,True,1.0,pass,No,No
+q27,What prefix do live API keys use?,api,easy,True,True,1,True,1.0,True,1.0,pass,nsk_,nsk_
+q28,What is the Team API rate limit?,api,easy,True,True,1,True,1.0,True,1.0,pass,300 requests per minute,300 requests per minute
+q29,How long are raw events retained on Starter?,retention,easy,True,True,1,True,1.0,True,1.0,pass,90 days,90 days
+q30,How long can a soft-deleted workspace be recovered?,retention,medium,True,True,1,True,1.0,True,1.0,pass,30 days,30 days
+q31,How long does a typical Enterprise onboarding take?,onboarding,easy,True,True,1,True,1.0,True,1.0,pass,6 weeks,6 weeks
+q32,What is the professional services hourly rate?,onboarding,easy,True,True,1,True,1.0,True,1.0,pass,$280 per hour,$280 per hour
+q33,Within how many minutes must a Sev-1 be acknowledged?,incidents,easy,True,True,1,True,1.0,True,1.0,pass,15 minutes,15 minutes
+q34,Where is public status published?,incidents,easy,True,True,1,True,0.5,True,0.5,pass,https://status.northstar.dev,https://status.northstar.dev.
+q35,How many employees were in the Dublin office as of March 2026?,offices,easy,True,True,1,True,1.0,True,1.0,pass,55,55
+q36,What is the Starter daily log ingest cap?,limits,easy,True,True,1,True,1.0,True,1.0,pass,20 GB per day,20 GB per day
+q37,How much does Team overage cost per GB?,limits,medium,True,True,1,True,1.0,True,1.0,pass,$0.12 per GB,$0.12 per GB
+q38,How long do we keep clickstream leftovers on the cheapest paid plan?,retention,hard,True,True,1,True,1.0,True,1.0,pass,90 days,90 days
+q39,What is Northstar's AWS Marketplace listing ID?,unanswerable,unanswerable,False,,,True,1.0,True,1.0,correct_abstain,<unanswerable>,I don't have enough information in the knowledge base to answer this.
+q40,What is Mara Ellison's annual compensation?,unanswerable,unanswerable,False,,,True,1.0,True,1.0,correct_abstain,<unanswerable>,"The board of directors includes Mara Ellison, Jonah Reeves (Horizon Ventures), and Elise Park (independent). Compensation details for executives are not published in customer documentation."
+q41,How many parking spaces are in the Dublin office garage?,unanswerable,unanswerable,False,,,True,1.0,True,1.0,correct_abstain,<unanswerable>,I don't have enough information in the knowledge base to answer this.
+q42,What streaming bus carries incoming telemetry into Northstar?,architecture,hard,True,True,2,True,0.3333,True,0.3333,pass,Apache Kafka,Ingestion uses Apache Kafka.
+q43,What language is the control plane written in?,architecture,medium,True,True,1,True,1.0,True,1.0,pass,Go,Go
+q44,"If a Team workspace finishes a month at 99.3% uptime, what service credit applies?",sla,hard,True,True,1,False,0.0,False,0.0,generation_failure,20%,99.5%
+q45,Where did David Cho work immediately before Northstar?,leadership,medium,True,True,1,True,1.0,True,1.0,pass,HarborPay,HarborPay

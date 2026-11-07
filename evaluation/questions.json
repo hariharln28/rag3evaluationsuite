@@ -1,0 +1,458 @@
+[
+  {
+    "id": "q01",
+    "question": "When was Northstar Analytics founded?",
+    "answer": "2017",
+    "answerable": true,
+    "must_contain": ["founded in 2017"],
+    "gold_docs": ["company"],
+    "category": "company",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q02",
+    "question": "In which city is Northstar headquartered?",
+    "answer": "Portland, Oregon",
+    "answerable": true,
+    "must_contain": ["founded in 2017 in Portland"],
+    "gold_docs": ["company"],
+    "category": "company",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q03",
+    "question": "How many people did Northstar employ as of March 2026?",
+    "answer": "420",
+    "answerable": true,
+    "must_contain": ["employs 420 people"],
+    "gold_docs": ["company"],
+    "category": "company",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q04",
+    "question": "Who led Northstar's Series C round?",
+    "answer": "Horizon Ventures",
+    "answerable": true,
+    "must_contain": ["led by Horizon Ventures"],
+    "gold_docs": ["company"],
+    "category": "company",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q05",
+    "question": "How much did Northstar raise in its Series C?",
+    "answer": "$90 million",
+    "answerable": true,
+    "must_contain": ["$90 million Series C"],
+    "gold_docs": ["company"],
+    "category": "company",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q06",
+    "question": "Who is the CEO of Northstar Analytics?",
+    "answer": "Mara Ellison",
+    "answerable": true,
+    "must_contain": ["Mara Ellison is Chief Executive Officer"],
+    "gold_docs": ["leadership"],
+    "category": "leadership",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q07",
+    "question": "Who is Northstar's Chief Technology Officer?",
+    "answer": "Priya Raman",
+    "answerable": true,
+    "must_contain": ["Priya Raman is Chief Technology Officer"],
+    "gold_docs": ["leadership"],
+    "category": "leadership",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q08",
+    "question": "When did David Cho join as CISO?",
+    "answer": "January 2023",
+    "answerable": true,
+    "must_contain": ["joined in January 2023"],
+    "gold_docs": ["leadership"],
+    "category": "leadership",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q09",
+    "question": "When did Pulse launch?",
+    "answer": "March 2019",
+    "answerable": true,
+    "must_contain": ["launched in March 2019"],
+    "gold_docs": ["products"],
+    "category": "products",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q10",
+    "question": "What is Helix?",
+    "answer": "a managed feature store",
+    "answerable": true,
+    "must_contain": ["Helix is a managed feature store"],
+    "gold_docs": ["products"],
+    "category": "products",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q11",
+    "question": "When did Atlas launch?",
+    "answer": "October 2023",
+    "answerable": true,
+    "must_contain": ["launched in October 2023"],
+    "gold_docs": ["products"],
+    "category": "products",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q12",
+    "question": "What is Pulse's default alert evaluation interval?",
+    "answer": "15 seconds",
+    "answerable": true,
+    "must_contain": ["default evaluation interval of 15 seconds"],
+    "gold_docs": ["products"],
+    "category": "products",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q13",
+    "question": "How many semantic domains can a Team plan define in Atlas?",
+    "answer": "12",
+    "answerable": true,
+    "must_contain": ["up to 12 semantic domains"],
+    "gold_docs": ["products"],
+    "category": "products",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q14",
+    "question": "What is the monthly list price of the Starter plan?",
+    "answer": "$499 per month",
+    "answerable": true,
+    "must_contain": ["Starter is $499 per month"],
+    "gold_docs": ["pricing"],
+    "category": "pricing",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q15",
+    "question": "How much does Enterprise cost per month?",
+    "answer": "$4,800 per month",
+    "answerable": true,
+    "must_contain": ["Enterprise is $4,800 per month"],
+    "gold_docs": ["pricing"],
+    "category": "pricing",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q16",
+    "question": "What is the annual prepay discount?",
+    "answer": "18%",
+    "answerable": true,
+    "must_contain": ["18% discount"],
+    "gold_docs": ["pricing"],
+    "category": "pricing",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q17",
+    "question": "Can a Starter workspace buy Atlas?",
+    "answer": "No",
+    "answerable": true,
+    "must_contain": ["Starter cannot purchase Atlas or Helix"],
+    "gold_docs": ["pricing"],
+    "category": "pricing",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q18",
+    "question": "What uptime SLA does Enterprise receive?",
+    "answer": "99.9%",
+    "answerable": true,
+    "must_contain": ["99.9% monthly uptime target"],
+    "gold_docs": ["sla"],
+    "category": "sla",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q19",
+    "question": "What is the maximum monthly service credit for an SLA miss?",
+    "answer": "50% of the monthly fee",
+    "answerable": true,
+    "must_contain": ["capped at 50% of the monthly fee"],
+    "gold_docs": ["sla"],
+    "category": "sla",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q20",
+    "question": "What is the Enterprise Sev-1 support response target?",
+    "answer": "1 hour",
+    "answerable": true,
+    "must_contain": ["Enterprise 1-hour response"],
+    "gold_docs": ["sla"],
+    "category": "sla",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q21",
+    "question": "What encryption is used for data at rest?",
+    "answer": "AES-256",
+    "answerable": true,
+    "must_contain": ["AES-256 at rest"],
+    "gold_docs": ["security"],
+    "category": "security",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q22",
+    "question": "Which data residency regions does Northstar offer?",
+    "answer": "United States and European Union",
+    "answerable": true,
+    "must_contain": ["United States and European Union"],
+    "gold_docs": ["security"],
+    "category": "security",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q23",
+    "question": "Does Northstar offer a HIPAA Business Associate Agreement?",
+    "answer": "No",
+    "answerable": true,
+    "must_contain": ["does not currently offer HIPAA Business Associate Agreements"],
+    "gold_docs": ["security"],
+    "category": "security",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q24",
+    "question": "What stream system does ingestion use?",
+    "answer": "Apache Kafka",
+    "answerable": true,
+    "must_contain": ["Ingestion uses Apache Kafka"],
+    "gold_docs": ["architecture"],
+    "category": "architecture",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q25",
+    "question": "What is the p99 objective for cached Pulse dashboard queries?",
+    "answer": "140 milliseconds",
+    "answerable": true,
+    "must_contain": ["140 milliseconds at p99"],
+    "gold_docs": ["architecture"],
+    "category": "architecture",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q26",
+    "question": "Does Northstar use Pinecone in production?",
+    "answer": "No",
+    "answerable": true,
+    "must_contain": ["does not use Pinecone in production"],
+    "gold_docs": ["architecture"],
+    "category": "architecture",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q27",
+    "question": "What prefix do live API keys use?",
+    "answer": "nsk_",
+    "answerable": true,
+    "must_contain": ["prefixed `nsk_`"],
+    "gold_docs": ["api"],
+    "category": "api",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q28",
+    "question": "What is the Team API rate limit?",
+    "answer": "300 requests per minute",
+    "answerable": true,
+    "must_contain": ["Team is limited to 300 requests per minute"],
+    "gold_docs": ["api"],
+    "category": "api",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q29",
+    "question": "How long are raw events retained on Starter?",
+    "answer": "90 days",
+    "answerable": true,
+    "must_contain": ["Starter retains raw events for 90 days"],
+    "gold_docs": ["retention"],
+    "category": "retention",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q30",
+    "question": "How long can a soft-deleted workspace be recovered?",
+    "answer": "30 days",
+    "answerable": true,
+    "must_contain": ["recoverable for 30 days"],
+    "gold_docs": ["retention"],
+    "category": "retention",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q31",
+    "question": "How long does a typical Enterprise onboarding take?",
+    "answer": "6 weeks",
+    "answerable": true,
+    "must_contain": ["Enterprise onboarding is 6 weeks"],
+    "gold_docs": ["onboarding"],
+    "category": "onboarding",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q32",
+    "question": "What is the professional services hourly rate?",
+    "answer": "$280 per hour",
+    "answerable": true,
+    "must_contain": ["$280 per hour"],
+    "gold_docs": ["onboarding"],
+    "category": "onboarding",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q33",
+    "question": "Within how many minutes must a Sev-1 be acknowledged?",
+    "answer": "15 minutes",
+    "answerable": true,
+    "must_contain": ["Sev-1 within 15 minutes"],
+    "gold_docs": ["incidents"],
+    "category": "incidents",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q34",
+    "question": "Where is public status published?",
+    "answer": "https://status.northstar.dev",
+    "answerable": true,
+    "must_contain": ["status.northstar.dev"],
+    "gold_docs": ["incidents"],
+    "category": "incidents",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q35",
+    "question": "How many employees were in the Dublin office as of March 2026?",
+    "answer": "55",
+    "answerable": true,
+    "must_contain": ["Dublin office: 55 employees"],
+    "gold_docs": ["offices"],
+    "category": "offices",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q36",
+    "question": "What is the Starter daily log ingest cap?",
+    "answer": "20 GB per day",
+    "answerable": true,
+    "must_contain": ["Starter 20 GB per day"],
+    "gold_docs": ["limits"],
+    "category": "limits",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q37",
+    "question": "How much does Team overage cost per GB?",
+    "answer": "$0.12 per GB",
+    "answerable": true,
+    "must_contain": ["$0.12 per GB on Team"],
+    "gold_docs": ["limits"],
+    "category": "limits",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q38",
+    "question": "How long do we keep clickstream leftovers on the cheapest paid plan?",
+    "answer": "90 days",
+    "answerable": true,
+    "must_contain": ["Starter retains raw events for 90 days"],
+    "gold_docs": ["retention"],
+    "category": "retention",
+    "difficulty": "hard",
+    "notes": "Paraphrase of Starter raw-event retention; wording does not match the source."
+  },
+  {
+    "id": "q39",
+    "question": "What is Northstar's AWS Marketplace listing ID?",
+    "answer": null,
+    "answerable": false,
+    "must_contain": [],
+    "gold_docs": [],
+    "category": "unanswerable",
+    "difficulty": "unanswerable",
+    "notes": "No marketplace listing exists in the corpus. Correct behavior is to abstain."
+  },
+  {
+    "id": "q40",
+    "question": "What is Mara Ellison's annual compensation?",
+    "answer": null,
+    "answerable": false,
+    "must_contain": [],
+    "gold_docs": [],
+    "category": "unanswerable",
+    "difficulty": "unanswerable",
+    "notes": "Docs say compensation is unpublished. Correct behavior is to abstain, not invent a number."
+  },
+  {
+    "id": "q41",
+    "question": "How many parking spaces are in the Dublin office garage?",
+    "answer": null,
+    "answerable": false,
+    "must_contain": [],
+    "gold_docs": [],
+    "category": "unanswerable",
+    "difficulty": "unanswerable",
+    "notes": "Offices are documented; parking inventory is not. Correct behavior is to abstain."
+  },
+  {
+    "id": "q42",
+    "question": "What streaming bus carries incoming telemetry into Northstar?",
+    "answer": "Apache Kafka",
+    "answerable": true,
+    "must_contain": ["Ingestion uses Apache Kafka"],
+    "gold_docs": ["architecture"],
+    "category": "architecture",
+    "difficulty": "hard",
+    "notes": "Paraphrase of the Kafka ingestion sentence."
+  },
+  {
+    "id": "q43",
+    "question": "What language is the control plane written in?",
+    "answer": "Go",
+    "answerable": true,
+    "must_contain": ["control plane is written in Go"],
+    "gold_docs": ["architecture"],
+    "category": "architecture",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q44",
+    "question": "If a Team workspace finishes a month at 99.3% uptime, what service credit applies?",
+    "answer": "20%",
+    "answerable": true,
+    "must_contain": ["10% of that month's subscription fee for each 0.1 percentage point"],
+    "gold_docs": ["sla"],
+    "category": "sla",
+    "difficulty": "hard",
+    "notes": "Requires composing the 0.1-point credit rule (99.5% target minus 99.3% is 0.2 points → 20%). Retrieval can succeed while generation fails."
+  },
+  {
+    "id": "q45",
+    "question": "Where did David Cho work immediately before Northstar?",
+    "answer": "HarborPay",
+    "answerable": true,
+    "must_contain": ["from HarborPay"],
+    "gold_docs": ["leadership"],
+    "category": "leadership",
+    "difficulty": "medium"
+  }
+]
